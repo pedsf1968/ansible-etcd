@@ -3,33 +3,12 @@
 # 
 # 5 ETCD
 # 2 LB with VIP for ETCD Client
-- name: "Create CA"
-  hosts: "admin"
-  gather_facts: true
-  vars_prompt:
-  - name: secret_ca_passphrase
-    prompt: CA certificate passphrase
-  roles:
-  - role: "system/openssl/openssl-passfile-create"
-     - role: "system/openssl/openssl-ca-create"
 
 ########################################################################## INIT
 - name: "Get IP from ETCD nodes"
   hosts: ["admin","ETCD"]
   gather_facts: true
 
-################################################################### DELETE ETCD
-- name: "Uninstall ETCD"
-  hosts: "etcd_nodes"
-  become: yes
-  gather_facts: yes
-  vars:
-    create_user_name: "{{ etcd_user_name }}"
-    create_group_name: "{{ etcd_user_group }}"
-  roles:
-    - role: "etcd/etcd-delete"
-    - role: "user/user-delete"
-    - role: "user/group-delete"
 
 ###################################################################### HA-PROXY
 - name: "Load balancer installation"
@@ -41,6 +20,20 @@
     - role: "system/nala/nala-upgrade"
     - role: "haproxy/haproxy-install"
     - role: "keepalived/keepalived-install"
+
+
+################################################################### DELETE ETCD
+- name: "Uninstall ETCD"
+  hosts: "etcd_nodes"
+  become: yes
+  gather_facts: yes
+  vars:
+    create_user_name: "{{ etcd_user_name }}"
+    create_group_name: "{{ etcd_user_group }}"
+  roles:
+  #  - role: "etcd/etcd-delete"
+  #  - role: "user/user-delete"
+  #  - role: "user/group-delete"
 
 ############################################################## CREATE ETCD USER
 - name: "Create ETCD users for all nodes"
@@ -57,11 +50,21 @@
     create_user_shell: "/sbin/nologin"
     create_user_system: true
   roles:
-    - role: "user/group-create"
-    - role: "user/user-create"
+  #  - role: "user/group-create"
+  #  - role: "user/user-create"
 
+######################################################### CREATE CA CERTIFICATE
+- name: "Create CA"
+  hosts: "admin"
+  gather_facts: true
+  vars_prompt:
+  - name: secret_ca_passphrase
+    prompt: CA certificate passphrase
+  roles:
+    - role: "system/openssl/openssl-passfile-create"
+  #  - role: "system/openssl/openssl-ca-create"
 
-#################################################################### ETCD SETUP
+############################################################ SERVER CERTIFICATE
 - name: "Create server certificates for ETCD member"
   hosts: "admin"
   gather_facts: false
@@ -79,10 +82,11 @@
   roles:
     - role: "system/openssl/openssl-remove-certs"
     - role: "system/openssl/openssl-create-key"
-    - role: "system/openssl/openssl-convert-to-pem"
     - role: "system/openssl/openssl-create-csr"
     - role: "system/openssl/openssl-create-crt"
+    - role: "system/openssl/openssl-convert-to-pem"
 
+############################################################## PEER CERTIFICATE
 - name: "Create peer certificates for ETCD member"
   hosts: "admin"
   gather_facts: false
@@ -100,10 +104,11 @@
   roles:
     - role: "system/openssl/openssl-remove-certs"
     - role: "system/openssl/openssl-create-key"
-    - role: "system/openssl/openssl-convert-to-pem"
     - role: "system/openssl/openssl-create-csr"
     - role: "system/openssl/openssl-create-crt"
+    - role: "system/openssl/openssl-convert-to-pem"
 
+############################################################ CLIENT CERTIFICATE
 - name: "Create server certificates for {{ admin_hostname }} member"
   hosts: "admin"
   gather_facts: false
@@ -121,11 +126,13 @@
   roles:
     - role: "system/openssl/openssl-remove-certs"
     - role: "system/openssl/openssl-create-key"
-    - role: "system/openssl/openssl-convert-to-pem"
     - role: "system/openssl/openssl-create-csr"
     - role: "system/openssl/openssl-create-crt"
+    - role: "system/openssl/openssl-convert-to-pem"
     - role: "system/openssl/openssl-passfile-remove"
 
+
+################################################################ LAUNCH INSTALL
 - name: "Copy nodes certificates and install ETCD"
   hosts: "etcd_nodes"
   become: yes
