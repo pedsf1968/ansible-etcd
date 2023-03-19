@@ -1,0 +1,44 @@
+---
+# tasks file for etcd-client-install
+
+######################################################################### CLEAN
+- name: "Remove old ETCD archive and directories"
+  ansible.builtin.file:
+    path: "/tmp/{{ etcd_archive }}"
+    state: absent
+  
+######################################################### GET ARCHIVE & EXTRACT
+- name: "Download ETCD archive"
+  ansible.builtin.get_url:
+    url: "{{ etcd_download_url }}"
+    dest: "/tmp/{{ etcd_archive }}"
+
+- name: "Untar the binary"
+  unarchive:
+    src: "/tmp/{{ etcd_archive }}"
+    dest: "{{ etcd_install_directory }}"
+    remote_src: yes
+
+############################################################# MOVE RIGHT FOLDER
+- name: "Move the extracted ETCD executables to local bin"
+  ansible.builtin.copy:
+    src: "{{ etcd_install_directory }}/{{ etcd_archive }}/{{ item }}"
+    dest: /usr/local/bin/
+    mode: u+x,g+x,a+x
+    remote_src: yes
+  with_items:
+    - etcdctl
+
+
+######################################################################## CONFIG
+- name: "Add etcdctl configuration in .bashrc"
+  lineinfile:
+    path: "/home/{{ admin_username }}/.bashrc"
+    line: "{{ item }}"  
+  with_items:
+    - "####################################################################### ETCDCTL"
+    - "export ETCDCTL_API=3"
+    - "export ETCDCTL_ENDPOINTS=https://k8s-etcd-lb-vip:{{ etcd_client_port }}"
+    - "export ETCDCTL_CACERT={{ certificate_certs_directory }}/ca-certificate.crt'"
+    - "export ETCDCTL_CERT='{{ certificate_certs_directory }}/{{ inventory_hostname }}/etcd-client.crt'"
+    - "export ETCDCTL_KEY='{{ certificate_private_directory }}/{{ inventory_hostname }}/etcd-client.key.pem'"

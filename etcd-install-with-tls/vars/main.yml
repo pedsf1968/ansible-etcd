@@ -1,0 +1,14 @@
+---
+# vars file for etcd-install
+etcd_version: v3.5.0
+etcd_archive: "etcd-{{ etcd_version }}-linux-amd64"
+
+# choose either URL
+google_url: https://storage.googleapis.com/etcd
+github_url: https://github.com/etcd-io/etcd/releases/download
+etcd_download_url: "{{ google_url }}/{{ etcd_version }}/{{ etcd_archive }}.tar.gz"
+
+etcd_install_directory: /usr/local/src
+
+etcd_peer_port: 2380
+etcd_client_port: 2379

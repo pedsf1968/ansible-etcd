@@ -1,0 +1,105 @@
+---
+# tasks file for etcd-install
+
+######################################################################### CLEAN
+- name: "Remove old ETCD archive and directories"
+  ansible.builtin.file:
+    path: "/tmp/{{ etcd_archive }}"
+    state: absent
+  
+######################################################### GET ARCHIVE & EXTRACT
+- name: "Download ETCD archive"
+  ansible.builtin.get_url:
+    url: "{{ etcd_download_url }}"
+    dest: "/tmp/{{ etcd_archive }}"
+
+- name: "Untar the binary"
+  unarchive:
+    src: "/tmp/{{ etcd_archive }}"
+    dest: "{{ etcd_install_directory }}"
+    remote_src: yes
+
+############################################################# MOVE RIGHT FOLDER
+- name: "Move the extracted ETCD executables to local bin"
+  ansible.builtin.copy:
+    src: "{{ etcd_install_directory }}/{{ etcd_archive }}/{{ item }}"
+    dest: /usr/local/bin/
+    mode: u+x,g+x,a+x
+    remote_src: yes
+  with_items:
+    - etcd
+    - etcdctl
+    - etcdutl
+
+####################################################### CREATE USER AND FOLDERS
+- name: "Create relevant etcd folders"
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ etcd_user_name }}"
+    group: "{{ etcd_user_group }}"
+  with_items:
+    - /etc/etcd 
+    - /var/lib/etcd
+
+####################################################### ETCD_LISTEN_CLIENT_URLS
+- name: "Build ETCD_LISTEN_CLIENT_URLS with TLS"
+  set_fact:
+    listen_client_urls: "{% for item in groups['etcd_nodes'] %}https://{{ hostvars[item]['ansible_host'] }}:{{ etcd_client_port }},{% endfor %}"
+
+- name: "Format ETCD_LISTEN_CLIENT_URLS"
+  set_fact:
+    etcd_listen_client_urls: "{{ listen_client_urls[:-1] | replace(' ',',') }},https://127.0.0.1:{{ etcd_client_port }}"
+
+######################################################### ETCD_LISTEN_PEER_URLS
+- name: "Build ETCD_LISTEN_PEER_URLS with TLS"
+  set_fact:
+    listen_peer_urls: "{% for item in groups['etcd_nodes'] %}https://{{ hostvars[item]['ansible_host'] }}:{{ etcd_peer_port }},{% endfor %}"
+
+- name: "Format ETCD_LISTEN_PEER_URLS"
+  set_fact:
+    etcd_listen_peer_urls: "{{ listen_peer_urls[:-1] | replace(' ',',') }}"
+
+
+########################################################## ETCD_INITIAL_CLUSTER
+- name: "Build ETCD ETCD_INITIAL_CLUSTER with TLS"
+  set_fact:
+    initial_cluster: "{% for item in groups['etcd_nodes'] %}etcd{{ item[-3:] }}=https://{{ hostvars[item]['ansible_host'] }}:{{ etcd_peer_port }},{% endfor %}"
+
+- name: "Format ETCD_INITIAL_CLUSTER"
+  set_fact:
+    etcd_initial_cluster: "{{ initial_cluster[:-1] | replace(' ',',') }}"
+
+
+######################################################################## CONFIG
+- name: "Set the ETCDCTL_API environment variable to 3"
+  lineinfile:
+    path: /etc/profile
+    line: export ETCDCTL_API=3
+    state: present
+    create: True
+    insertafter: EOF
+
+- name: "Create etcd configuration file"
+  ansible.builtin.template:
+    src: etcd.conf.j2
+    dest: /etc/etcd/etcd.conf
+    owner: "{{ etcd_user_name }}"
+    group: "{{ etcd_user_group }}"
+
+- name: "Create a systemd service file for etcd"
+  ansible.builtin.template:
+    src: etcd.service.j2
+    dest: /etc/systemd/system/etcd.service
+    owner: "{{ etcd_user_name }}"
+    group: "{{ etcd_user_group }}"
+
+################################################################# START SERVICE
+- name: "Enable and restart etcd service"
+  ansible.builtin.systemd:
+    name: etcd
+    state: started
+    force: true
+    daemon_reload: yes
+    daemon_reexec: yes
+    enabled: yes

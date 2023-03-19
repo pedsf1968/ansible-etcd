@@ -1,0 +1,16 @@
+[Unit]
+Description=etcd distributed reliable key-value store
+Documentation=https://github.com/coreos/etcd
+After=network.target
+
+
+[Service]
+User=etcd
+Type=notify
+EnvironmentFile=/etc/etcd/etcd.conf
+ExecStart=/usr/local/bin/etcd 
+Restart=always
+RestartSec=5
+ 
+[Install]
+WantedBy=multi-user.target
