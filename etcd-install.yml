@@ -11,7 +11,7 @@
     prompt: CA certificate passphrase
   roles:
   - role: "system/openssl/openssl-passfile-create"
-    # - role: "system/openssl/openssl-ca-create"
+     - role: "system/openssl/openssl-ca-create"
 
 ########################################################################## INIT
 - name: "Get IP from ETCD nodes"
@@ -27,9 +27,9 @@
     create_user_name: "{{ etcd_user_name }}"
     create_group_name: "{{ etcd_user_group }}"
   roles:
-#    - role: "etcd/etcd-delete"
-#    - role: "user/user-delete"
-#    - role: "user/group-delete"
+    - role: "etcd/etcd-delete"
+    - role: "user/user-delete"
+    - role: "user/group-delete"
 
 ###################################################################### HA-PROXY
 - name: "Load balancer installation"
@@ -37,10 +37,10 @@
   become: yes
   gather_facts: false
   roles:
-#    - role: "system/nala/nala-update"
-#    - role: "system/nala/nala-upgrade"
-#    - role: "haproxy/haproxy-install"
-#    - role: "keepalived/keepalived-install"
+    - role: "system/nala/nala-update"
+    - role: "system/nala/nala-upgrade"
+    - role: "haproxy/haproxy-install"
+    - role: "keepalived/keepalived-install"
 
 ############################################################## CREATE ETCD USER
 - name: "Create ETCD users for all nodes"
@@ -57,8 +57,8 @@
     create_user_shell: "/sbin/nologin"
     create_user_system: true
   roles:
-    #- role: "user/group-create"
-    #- role: "user/user-create"
+    - role: "user/group-create"
+    - role: "user/user-create"
 
 
 #################################################################### ETCD SETUP
@@ -77,14 +77,11 @@
     certificate_remote_owner: "{{ etcd_user_name }}"
     certificate_remote_group: "{{ etcd_user_group }}"
   roles:
-    #- role: "system/openssl/openssl-remove-certs"
-    #- role: "system/openssl/openssl-create-key"
-    #- role: "system/openssl/openssl-convert-to-pem"
-    #- role: "system/openssl/openssl-create-csr"
-    #- role: "system/openssl/openssl-create-crt"
-    #- role: "system/certificate/certificate-create-key"
-    #- role: "system/certificate/certificate-create-csr"
-    #- role: "system/certificate/certificate-create-crt"
+    - role: "system/openssl/openssl-remove-certs"
+    - role: "system/openssl/openssl-create-key"
+    - role: "system/openssl/openssl-convert-to-pem"
+    - role: "system/openssl/openssl-create-csr"
+    - role: "system/openssl/openssl-create-crt"
 
 - name: "Create peer certificates for ETCD member"
   hosts: "admin"
@@ -101,14 +98,11 @@
     certificate_remote_owner: "{{ etcd_user_name }}"
     certificate_remote_group: "{{ etcd_user_group }}"
   roles:
-    #- role: "system/openssl/openssl-remove-certs"
-    #- role: "system/openssl/openssl-create-key"
-    #- role: "system/openssl/openssl-convert-to-pem"
-    #- role: "system/openssl/openssl-create-csr"
-    #- role: "system/openssl/openssl-create-crt"
-    #- role: "system/certificate/certificate-create-key"
-    #- role: "system/certificate/certificate-create-csr"
-    #- role: "system/certificate/certificate-create-crt"
+    - role: "system/openssl/openssl-remove-certs"
+    - role: "system/openssl/openssl-create-key"
+    - role: "system/openssl/openssl-convert-to-pem"
+    - role: "system/openssl/openssl-create-csr"
+    - role: "system/openssl/openssl-create-crt"
 
 - name: "Create server certificates for {{ admin_hostname }} member"
   hosts: "admin"
@@ -125,16 +119,12 @@
     certificate_remote_owner: "{{ ansible }}"
     certificate_remote_group: "{{ ansible }}"
   roles:
-    #- role: "system/openssl/openssl-remove-certs"
-    #- role: "system/openssl/openssl-create-key"
-    #- role: "system/openssl/openssl-convert-to-pem"
-    #- role: "system/openssl/openssl-create-csr"
-    #- role: "system/openssl/openssl-create-crt"
-    #- role: "system/openssl/openssl-passfile-remove"
-    #- role: "system/certificate/certificate-create-key"
-    #- role: "system/certificate/certificate-create-csr"
-    #- role: "system/certificate/certificate-create-crt"
-
+    - role: "system/openssl/openssl-remove-certs"
+    - role: "system/openssl/openssl-create-key"
+    - role: "system/openssl/openssl-convert-to-pem"
+    - role: "system/openssl/openssl-create-csr"
+    - role: "system/openssl/openssl-create-crt"
+    - role: "system/openssl/openssl-passfile-remove"
 
 - name: "Copy nodes certificates and install ETCD"
   hosts: "etcd_nodes"
@@ -150,8 +140,8 @@
     certificate_remote_owner: "{{ etcd_user_name }}"
     certificate_remote_group: "{{ etcd_user_group }}"
   roles:
-    #- role: "system/openssl/openssl-copy"
-    # - role: "etcd/etcd-install"
+    - role: "system/openssl/openssl-copy"
+     - role: "etcd/etcd-install"
      - role: "etcd/etcd-install-with-tls"
 
 ####################################################################### ETCDCTL
