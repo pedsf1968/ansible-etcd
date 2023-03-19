@@ -141,8 +141,7 @@
     certificate_remote_group: "{{ etcd_user_group }}"
   roles:
     - role: "system/openssl/openssl-copy"
-     - role: "etcd/etcd-install"
-     - role: "etcd/etcd-install-with-tls"
+    - role: "etcd/etcd-install-with-tls"
 
 ####################################################################### ETCDCTL
 - name: "Install etcdcli on {{ admin_hostname }}"
