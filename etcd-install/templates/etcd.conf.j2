@@ -4,7 +4,6 @@ ETCD_DATA_DIR=/var/lib/etcd
 ETCD_HEARTBEAT_INTERVAL=1000
 ETCD_ELECTION_TIMEOUT=5000
 
-
 # Client
 ETCD_LISTEN_CLIENT_URLS="http://{{ ansible_host }}:{{ etcd_client_port }},http://127.0.0.1:{{ etcd_client_port }}"
 ETCD_ADVERTISE_CLIENT_URLS="http://{{ ansible_host }}:{{ etcd_client_port }}"
@@ -17,4 +16,3 @@ ETCD_INITIAL_ADVERTISE_PEER_URLS="http://{{ ansible_host }}:{{ etcd_peer_port }}
 ETCD_INITIAL_CLUSTER="{{ etcd_initial_cluster }}"
 ETCD_INITIAL_CLUSTER_STATE=new
 ETCD_INITIAL_CLUSTER_TOKEN="etcd-cluster-01"
-ETCD_SERVERS=10.1.66.30:2379

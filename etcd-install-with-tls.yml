@@ -1,0 +1,167 @@
+---
+# ETCD install for k8s on VMware VM Playbook
+# 
+# 5 ETCD
+# 2 LB with VIP for ETCD Client
+
+########################################################################## INIT
+- name: "Get IP from ETCD nodes"
+  hosts: ["admin","etcd_lb_physical","etcd_nodes"]
+  become: yes
+  gather_facts: true
+  roles:
+    #- role: "system/nala/nala-update"
+    #- role: "system/nala/nala-upgrade"
+
+
+###################################################################### HA-PROXY
+- name: "Load balancer installation"
+  hosts: ["etcd_lb_physical"]
+  become: false
+  gather_facts: false
+  roles:
+    #- role: "haproxy/haproxy-install"
+    #- role: "keepalived/keepalived-install"
+
+
+################################################################### DELETE ETCD
+- name: "Uninstall ETCD"
+  hosts: ["etcd_nodes"]
+  become: yes
+  gather_facts: yes
+  vars:
+    create_user_name: "{{ etcd_user_name }}"
+    create_group_name: "{{ etcd_user_group }}"
+  roles:
+  #  - role: "etcd/etcd-delete"
+  #  - role: "user/user-delete"
+  #  - role: "user/group-delete"
+
+############################################################## CREATE ETCD USER
+- name: "Create ETCD users for all nodes"
+  hosts: ["etcd_nodes"]
+  become: yes
+  gather_facts: false
+  vars:
+    create_group_name: "{{ etcd_user_group }}"
+    create_group_gid: "{{ etcd_user_gid }}"
+    create_group_system: true
+    create_user_name: "{{ etcd_user_name }}"
+    create_user_uid: "{{ etcd_user_uid }}"
+    create_user_comment: "{{ etcd_user_comment }}"
+    create_user_shell: "/sbin/nologin"
+    create_user_system: true
+  roles:
+  #  - role: "user/group-create"
+  #  - role: "user/user-create"
+
+######################################################## CREATE PASSPHRASE FILE
+- name: "Create passphrase file and CA"
+  hosts: ["admin"]
+  gather_facts: true
+  vars_prompt:
+  - name: secret_ca_passphrase
+    prompt: CA certificate passphrase
+  roles:
+    #- role: "system/openssl/openssl-passfile-create"
+    #- role: "system/openssl/openssl-ca-create"
+
+############################################################ SERVER CERTIFICATE
+- name: "Create server certificates for ETCD nodes"
+  hosts: ["admin"]
+  gather_facts: false
+  vars:
+    certificate_name: "server"
+    certificate_owner: ansible
+    certificate_group: ansible
+    certificate_private_directory: "/home/ansible/ca/private"
+    certificate_csr_directory: "/home/ansible/ca/csr"
+    certificate_certs_directory: "/home/ansible/ca/certs"
+    certificate_host_list: "{{ groups['etcd_nodes'] }}"
+    certificate_remote_directory: "/etc/etcd/pki"
+    certificate_remote_owner: "{{ etcd_user_name }}"
+    certificate_remote_group: "{{ etcd_user_group }}"
+  roles:
+    #- role: "system/openssl/openssl-remove-certs"
+    #- role: "system/openssl/openssl-create-key"
+    #- role: "system/openssl/openssl-create-csr"
+    #- role: "system/openssl/openssl-create-crt"
+    #- role: "system/openssl/openssl-convert-to-pem"
+
+############################################################## PEER CERTIFICATE
+- name: "Create peer certificates for ETCD nodes"
+  hosts: ["admin"]
+  gather_facts: false
+  vars:
+    certificate_name: "peer"
+    certificate_owner: ansible
+    certificate_group: ansible
+    certificate_private_directory: "/home/ansible/ca/private"
+    certificate_csr_directory: "/home/ansible/ca/csr"
+    certificate_certs_directory: "/home/ansible/ca/certs"
+    certificate_host_list: "{{ groups['etcd_nodes'] }}"
+    certificate_remote_directory: "/etc/etcd/pki"
+    certificate_remote_owner: "{{ etcd_user_name }}"
+    certificate_remote_group: "{{ etcd_user_group }}"
+  roles:
+    #- role: "system/openssl/openssl-remove-certs"
+    #- role: "system/openssl/openssl-create-key"
+    #- role: "system/openssl/openssl-create-csr"
+    #- role: "system/openssl/openssl-create-crt"
+    #- role: "system/openssl/openssl-convert-to-pem"
+
+############################################################ CLIENT CERTIFICATE
+- name: "Create server certificates for {{ admin_hostname }} member"
+  hosts: ["admin"]
+  gather_facts: false
+  vars:
+    certificate_name: "etcd-client"
+    certificate_owner: ansible
+    certificate_group: ansible
+    certificate_private_directory: "/home/ansible/ca/private"
+    certificate_csr_directory: "/home/ansible/ca/csr"
+    certificate_certs_directory: "/home/ansible/ca/certs"
+    certificate_host_list: "{{ admin_hostname }}"
+    certificate_remote_directory: "/etc/etcd/pki"
+    certificate_remote_owner: "{{ ansible }}"
+    certificate_remote_group: "{{ ansible }}"
+  roles:
+    #- role: "system/openssl/openssl-remove-certs"
+    #- role: "system/openssl/openssl-create-key"
+    #- role: "system/openssl/openssl-create-csr"
+    #- role: "system/openssl/openssl-create-crt"
+    #- role: "system/openssl/openssl-convert-to-pem"
+
+######################################################## REMOVE PASSPHRASE FILE
+- name: "remove passphrase file"
+  hosts: ["admin"]
+  gather_facts: false
+  roles:
+    #- role: "system/openssl/openssl-passfile-remove"
+
+################################################################ LAUNCH INSTALL
+- name: "Copy nodes certificates and install ETCD"
+  hosts: ["etcd_nodes"]
+  become: yes
+  gather_facts: yes
+  vars:
+    certificate_private_directory: "/home/ansible/ca/private"
+    certificate_csr_directory: "/home/ansible/ca/csr"
+    certificate_certs_directory: "/home/ansible/ca/certs"
+    certificate_host_list: "{{ groups['etcd_nodes'] }}"
+    certificate_name_list: ["server", "peer" ]
+    certificate_remote_directory: "/etc/etcd/pki"
+    certificate_remote_owner: "{{ etcd_user_name }}"
+    certificate_remote_group: "{{ etcd_user_group }}"
+  roles:
+    #- role: "system/openssl/openssl-copy"
+    #- role: "etcd/etcd-install"
+    #- role: "etcd/etcd-install-with-tls"
+
+####################################################################### ETCDCTL
+- name: "Install etcdcli on {{ admin_hostname }}"
+  hosts: ["admin"]
+  become: yes
+  gather_facts: false
+  roles:
+    #- role: "etcd/etcd-client-install"

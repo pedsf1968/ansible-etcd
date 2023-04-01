@@ -1,0 +1,22 @@
+---
+# tasks file for etcd-client-remove-with-tls
+
+- name: "Remove binaries"
+  ansible.builtin.file:
+    path: "/usr/local/bin/{{ item }}"
+    state: absent
+  with_items:
+    - etcdctl
+
+- name: "Add etcdctl configuration in .bashrc"
+  lineinfile:
+    path: "/home/{{ admin_username }}/.bashrc"
+    regexp: "^{{ item }}"
+    state: absent  
+  with_items:
+    - "####################################################################### ETCDCTL"
+    - "export ETCDCTL_API"
+    - "export ETCDCTL_ENDPOINTS"
+    - "export ETCDCTL_CACERT"
+    - "export ETCDCTL_CERT"
+    - "export ETCDCTL_KEY"

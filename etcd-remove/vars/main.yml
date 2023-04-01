@@ -1,5 +1,5 @@
 ---
-# vars file for etcd-client-install
+# vars file for etcd-install
 etcd_version: v3.5.6
 etcd_archive: "etcd-{{ etcd_version }}-linux-amd64"
 

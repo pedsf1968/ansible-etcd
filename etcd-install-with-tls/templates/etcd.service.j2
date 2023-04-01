@@ -9,11 +9,11 @@ User={{ etcd_user_name }}
 Type=notify
 
 # With configuration file uncomment 2 lines below
-EnvironmentFile=/etc/etcd/etcd.conf
-ExecStart=/usr/local/bin/etcd
+#EnvironmentFile=/etc/etcd/etcd.conf
+#ExecStart=/usr/local/bin/etcd
 
 # Without configuration file uncomment line below
-#ExecStart=/usr/local/bin/etcd --name etcd{{ inventory_hostname[-3:] }} --data-dir /var/lib/etcd --initial-advertise-peer-urls https://{{ ansible_host }}:{{ etcd_peer_port }} --listen-peer-urls https://{{ ansible_host }}:{{ etcd_peer_port }} --listen-client-urls https://{{ ansible_host }}:{{ etcd_client_port }},https://127.0.0.1:{{ etcd_client_port }} --advertise-client-urls https://{{ ansible_host }}:{{ etcd_client_port }} --initial-cluster-token etcd-cluster-01 --initial-cluster {{ etcd_initial_cluster }} --client-cert-auth --trusted-ca-file=/etc/etcd/pki/{{ certificate_ca_name }}.crt --cert-file=/etc/etcd/pki/server.crt --key-file=/etc/etcd/pki/server.key.pem --peer-client-cert-auth --peer-trusted-ca-file=/etc/etcd/pki/{{ certificate_ca_name }}.crt --peer-cert-file=/etc/etcd/pki/peer.crt --peer-key-file=/etc/etcd/pki/peer.key.pem --initial-cluster-state new
+ExecStart=/usr/local/bin/etcd --name etcd{{ inventory_hostname[-3:] }} --data-dir /var/lib/etcd --initial-advertise-peer-urls https://{{ ansible_host }}:{{ etcd_peer_port }} --listen-peer-urls https://{{ ansible_host }}:{{ etcd_peer_port }} --listen-client-urls https://{{ ansible_host }}:{{ etcd_client_port }},https://127.0.0.1:{{ etcd_client_port }} --advertise-client-urls https://{{ ansible_host }}:{{ etcd_client_port }} --initial-cluster-token etcd-cluster-01 --initial-cluster {{ etcd_initial_cluster }} --client-cert-auth --trusted-ca-file=/etc/etcd/pki/{{ certificate_ca_name }}.crt --cert-file=/etc/etcd/pki/server.crt --key-file=/etc/etcd/pki/server.pem --peer-client-cert-auth --peer-trusted-ca-file=/etc/etcd/pki/{{ certificate_ca_name }}.crt --peer-cert-file=/etc/etcd/pki/peer.crt --peer-key-file=/etc/etcd/pki/peer.pem --initial-cluster-state new
 
 Restart=always
 RestartSec=5

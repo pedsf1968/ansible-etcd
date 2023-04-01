@@ -1,0 +1,18 @@
+---
+# Remove ETCD on VMware VM Playbook
+
+################################################################### REMOVE ETCD
+- name: "Remove all ETCD"
+  hosts: ["etcd_nodes"]
+  become: yes
+  gather_facts: yes
+  roles:
+    - role: "etcd/etcd-remove"
+
+####################################################################### ETCDCTL
+- name: "Remove etcdcli on {{ admin_hostname }}"
+  hosts: ["admin"]
+  become: yes
+  gather_facts: false
+  roles:
+    - role: "etcd/etcd-client-remove"

@@ -98,6 +98,16 @@
 - name: "Enable and restart etcd service"
   ansible.builtin.systemd:
     name: etcd
+    state: stopped
+    force: true
+    daemon_reload: yes
+    daemon_reexec: yes
+    enabled: yes
+
+
+- name: "Enable and restart etcd service"
+  ansible.builtin.systemd:
+    name: etcd
     state: started
     force: true
     daemon_reload: yes

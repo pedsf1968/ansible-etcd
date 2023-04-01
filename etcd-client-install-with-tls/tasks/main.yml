@@ -29,6 +29,7 @@
   with_items:
     - etcdctl
 
+
 ######################################################################## CONFIG
 - name: "Add etcdctl configuration in .bashrc"
   lineinfile:
@@ -37,4 +38,7 @@
   with_items:
     - "####################################################################### ETCDCTL"
     - "export ETCDCTL_API=3"
-    - "export ETCDCTL_ENDPOINTS=http://k8s-etcd-lb-vip:{{ etcd_client_port }}"
+    - "export ETCDCTL_ENDPOINTS=https://k8s-etcd-lb-vip:{{ etcd_client_port }}"
+    - "export ETCDCTL_CACERT='{{ certificate_certs_directory }}/ca-certificate.crt'"
+    - "export ETCDCTL_CERT='{{ certificate_certs_directory }}/{{ inventory_hostname }}/etcd-client.crt'"
+    - "export ETCDCTL_KEY='{{ certificate_private_directory }}/{{ inventory_hostname }}/etcd-client.key.pem'"
