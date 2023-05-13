@@ -9,9 +9,9 @@ ETCD_LISTEN_CLIENT_URLS="https://{{ ansible_host }}:{{ etcd_client_port }},https
 ETCD_ADVERTISE_CLIENT_URLS="https://{{ ansible_host }}:{{ etcd_client_port }}"
 ETCD_CLIENT_CERT_AUTH="true"
 #ETCD_AUTO_TLS="true"
-ETCD_TRUSTED_CA_FILE=/etc/etcd/pki/{{ certificate_ca_name }}.crt
-ETCD_CERT_FILE=/etc/etcd/pki/server.crt
-ETCD_KEY_FILE=/etc/etcd/pki/server.pem
+ETCD_TRUSTED_CA_FILE=/etc/etcd/pki/sub-ca.pem
+ETCD_CERT_FILE=/etc/etcd/pki/server.pem
+ETCD_KEY_FILE=/etc/etcd/pki/server-key.pem
 
 # Peer
 ETCD_LISTEN_PEER_URLS="https://{{ ansible_host }}:{{ etcd_peer_port }}"
@@ -19,9 +19,9 @@ ETCD_LISTEN_PEER_URLS="https://{{ ansible_host }}:{{ etcd_peer_port }}"
 ETCD_INITIAL_ADVERTISE_PEER_URLS="https://{{ ansible_host }}:{{ etcd_peer_port }}"
 ETCD_PEER_CLIENT_CERT_AUTH="true"
 #ETCD_PEER_AUTO_TLS="true"
-ETCD_PEER_TRUSTED_CA_FILE=/etc/etcd/pki/{{ certificate_ca_name }}.crt
-ETCD_PEER_CERT_FILE=/etc/etcd/pki/peer.crt
-ETCD_PEER_KEY_FILE=/etc/etcd/pki/peer.pem
+ETCD_PEER_TRUSTED_CA_FILE=/etc/etcd/pki/sub-ca.pem
+ETCD_PEER_CERT_FILE=/etc/etcd/pki/peer.pem
+ETCD_PEER_KEY_FILE=/etc/etcd/pki/peer-key.pem
 
 # Cluster
 ETCD_INITIAL_CLUSTER="{{ etcd_initial_cluster }}"

@@ -12,10 +12,3 @@ etcd_install_directory: /usr/local/src
 
 etcd_peer_port: 2380
 etcd_client_port: 2379
-
-certificate_directory: "/home/ansible/ca"
-certificate_private_directory: "{{ certificate_directory }}/private"
-certificate_certs_directory: "{{ certificate_directory }}/certs"
-certificate_csr_directory: "{{ certificate_directory }}/csr"
-certificate_crl_directory: "{{ certificate_directory }}/crl"
-certificate_newcerts_directory: "{{ certificate_directory }}/newcerts"

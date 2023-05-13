@@ -1,14 +1,17 @@
 ---
 # tasks file for etcd-remove
 
-- name: "Stop  etcd service"
+################################################################# STOP SERVICE
+- name: "Disable and remove etcd service"
   ansible.builtin.systemd:
     name: etcd
     state: stopped
     daemon_reload: yes
     masked: no
-    enabled: no
+    enabled: false
+    force: true
 
+############################################################## REMOVE ALL FILES
 - name: "Remove binaries"
   ansible.builtin.file:
     path: "/usr/local/bin/{{ item }}"
